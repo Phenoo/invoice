@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  createdAt      DateTime  @default(now())
+  updateAt       DateTime  @updatedAt
+
+  accounts Account[]
+  invoices Invoice[]
+}
+
+model Account {
+  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String  @db.ObjectId
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.String
+  access_token       String? @db.String
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.String
+  session_state      String?
+  oauth_token_secret String?
+  oauth_token        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Invoice {
+  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  idNo                String
+  invoiceDate         DateTime
+  dueDate             DateTime
+  streetAddress       String
+  city                String
+  postCode            String
+  country             String
+  bankAccount         String
+  clientName          String
+  clientEmail         String
+  clientStreetAddress String
+  clientCity          String
+  clientPostCode      String
+  clientCountry       String
+  decription          String
+  currencyCountry     String
+  userId              String        @db.ObjectId
+  status              String
+  totalAmount         String
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items               InvoiceItem[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model InvoiceItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  quantity  String
+  price     String
+  tax       String
+  Invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId String  @db.ObjectId
+}
